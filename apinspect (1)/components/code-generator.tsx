@@ -95,9 +95,6 @@ function generateCode(language: string, requestData: RequestData, authConfig: Au
     }
   } else if (authConfig.type === "oauth2") {
     const { accessToken, tokenType } = authConfig.oauth2;
-    if (accessToken) {\
-      headerEnt  {
-    const { accessToken, tokenType } = authConfig.oauth2;
     if (accessToken) {
       headerEntries.push(["Authorization", `${tokenType || "Bearer"} ${accessToken}`]);
     }
@@ -296,4 +293,3 @@ public class ApiRequest {
   }
 }`;
 }
-
