@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,22 +11,60 @@ import ParamsEditor from "./params-editor"
 import BodyEditor from "./body-editor"
 import AuthManager from "./auth-manager"
 
+// Define HTTP_METHODS here
+const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+
+// Update the RequestBuilderProps interface to include currentRequest
 interface RequestBuilderProps {
   onSendRequest: (requestData: RequestData) => void
   isLoading: boolean
   authConfig: AuthConfig
   setAuthConfig: (config: AuthConfig) => void
+  currentRequest: RequestData | null
 }
 
-const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
-
-export default function RequestBuilder({ onSendRequest, isLoading, authConfig, setAuthConfig }: RequestBuilderProps) {
+// Update the function signature to include currentRequest
+export default function RequestBuilder({
+  onSendRequest,
+  isLoading,
+  authConfig,
+  setAuthConfig,
+  currentRequest,
+}: RequestBuilderProps) {
   const [method, setMethod] = useState("GET")
   const [url, setUrl] = useState("https://jsonplaceholder.typicode.com/posts")
   const [headers, setHeaders] = useState([{ key: "Content-Type", value: "application/json", enabled: true }])
   const [params, setParams] = useState([{ key: "", value: "", enabled: true }])
   const [body, setBody] = useState("")
   const [contentType, setContentType] = useState("application/json")
+
+  // Add a useEffect to update the form when currentRequest changes
+  useEffect(() => {
+    if (currentRequest) {
+      setMethod(currentRequest.method)
+      setUrl(currentRequest.url)
+
+      if (currentRequest.headers && currentRequest.headers.length > 0) {
+        setHeaders(currentRequest.headers)
+      }
+
+      // Update content type if present
+      const contentTypeHeader = currentRequest.headers?.find((h) => h.key.toLowerCase() === "content-type")
+      if (contentTypeHeader) {
+        setContentType(contentTypeHeader.value)
+      }
+
+      // Clear params by default
+      setParams([{ key: "", value: "", enabled: true }])
+
+      // Set body if present
+      if (currentRequest.body) {
+        setBody(currentRequest.body)
+      } else {
+        setBody("")
+      }
+    }
+  }, [currentRequest])
 
   // Update Content-Type header when contentType changes
   const updateContentTypeHeader = (newContentType: string) => {
@@ -72,7 +110,7 @@ export default function RequestBuilder({ onSendRequest, isLoading, authConfig, s
   }
 
   return (
-    <div className="space-y-4 border rounded-lg p-4 bg-card">
+    <div className="space-y-4 border rounded-lg p-4 bg-card request-builder-section">
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="w-full sm:w-32">
           <Select value={method} onValueChange={setMethod}>
