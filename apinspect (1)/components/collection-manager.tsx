@@ -3,18 +3,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { Collection, SavedRequest, RequestData } from "@/lib/types"
-import { FolderPlus, MoreVertical, Pencil, Trash2, Save } from "lucide-react"
+import { MoreVertical, Pencil, Trash2, Save } from "lucide-react"
+import CollectionImporter from "./collection-importer"
+import CurlImporter from "./curl-importer"
 
 interface CollectionManagerProps {
   collections: Collection[]
@@ -102,17 +96,16 @@ export default function CollectionManager({
   }
 
   return (
-    <div>
+    <div className="flex items-center gap-2">
       <Button variant="outline" onClick={handleSaveRequest} disabled={!currentRequest}>
         <Save className="h-4 w-4 mr-2" /> Save Request
       </Button>
 
+      <CollectionImporter collections={collections} setCollections={setCollections} />
+
+      <CurlImporter collections={collections} setCollections={setCollections} onLoadRequest={onLoadRequest} />
+
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          <Button variant="ghost" className="ml-2">
-            <FolderPlus className="h-4 w-4 mr-2" /> Manage Collections
-          </Button>
-        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Manage Collections</DialogTitle>
