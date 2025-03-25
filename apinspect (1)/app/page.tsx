@@ -283,10 +283,15 @@ export default function Home() {
   const handleLoadRequest = (savedRequest: SavedRequest | RequestHistory) => {
     // If it's a history item, we need to extract the request
     const request = "request" in savedRequest ? savedRequest.request : savedRequest
+
+    // Set the current request
     setCurrentRequest(request)
 
-    // In a real app, we would update the UI components with the loaded request
-    // This would typically be handled through refs or context
+    // Scroll to the request builder section
+    const requestBuilderElement = document.querySelector(".request-builder-section")
+    if (requestBuilderElement) {
+      requestBuilderElement.scrollIntoView({ behavior: "smooth" })
+    }
   }
 
   return (
@@ -331,6 +336,7 @@ export default function Home() {
             isLoading={isLoading}
             authConfig={authConfig}
             setAuthConfig={setAuthConfig}
+            currentRequest={currentRequest}
           />
           <ResponseViewer response={response} isLoading={isLoading} />
         </div>
