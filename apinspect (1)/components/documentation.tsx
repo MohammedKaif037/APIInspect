@@ -17,7 +17,7 @@ export default function Documentation() {
           <FileText className="h-4 w-4 mr-2" /> Documentation
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col">
         <DialogHeader>
           <DialogTitle>APInspect Documentation</DialogTitle>
         </DialogHeader>
