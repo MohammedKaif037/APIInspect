@@ -7,7 +7,6 @@ import Sidebar from "@/components/sidebar"
 import EnvironmentManager from "@/components/environment-manager"
 import CollectionManager from "@/components/collection-manager"
 import CodeGenerator from "@/components/code-generator"
-import MockServer from "@/components/mock-server"
 import TestInterface from "@/components/test-interface"
 import type {
   RequestData,
@@ -15,12 +14,10 @@ import type {
   Environment,
   Collection,
   AuthConfig,
-  MockConfig,
   Test,
   RequestHistory,
 } from "@/lib/types"
 import { processUrl, processHeaders, processBody } from "@/lib/environment-utils"
-import { mockServer } from "@/lib/mock-server"
 import * as storage from "@/lib/storage"
 import HistoryViewer from "@/components/history-viewer"
 import ThemeToggle from "@/components/theme-toggle"
@@ -55,10 +52,6 @@ export default function Home() {
     oauth2: { accessToken: "", tokenType: "Bearer" },
   })
 
-  // State for mock server
-  const [mocks, setMocks] = useState<MockConfig[]>([])
-  const [activeMock, setActiveMock] = useState<string | null>(null)
-
   // State for tests
   const [tests, setTests] = useState<Test[]>([])
 
@@ -70,8 +63,6 @@ export default function Home() {
     setEnvironments(storage.getEnvironments())
     setActiveEnvironment(storage.getActiveEnvironment())
     setCollections(storage.getCollections())
-    setMocks(storage.getMocks())
-    setActiveMock(storage.getActiveMock())
     setTests(storage.getTests())
     setHistory(storage.getHistory())
   }, [])
@@ -90,26 +81,6 @@ export default function Home() {
   }, [collections])
 
   useEffect(() => {
-    storage.saveMocks(mocks)
-  }, [mocks])
-
-  useEffect(() => {
-    storage.saveActiveMock(activeMock)
-
-    // Update the mock server with the active mock
-    if (activeMock) {
-      const mock = mocks.find((m) => m.id === activeMock) || null
-      if (mock) {
-        mockServer.setActiveMock(mock)
-      } else {
-        mockServer.setActiveMock(null)
-      }
-    } else {
-      mockServer.setActiveMock(null)
-    }
-  }, [activeMock, mocks])
-
-  useEffect(() => {
     storage.saveTests(tests)
   }, [tests])
 
@@ -122,31 +93,6 @@ export default function Home() {
       const processedUrl = processUrl(requestData.url, environments, activeEnvironment)
       const processedHeaders = processHeaders(requestData.headers, environments, activeEnvironment)
       const processedBody = processBody(requestData.body, environments, activeEnvironment)
-
-      // Check if we should use the mock server
-      const mockResponse = await mockServer.handleRequest(
-        processedUrl,
-        requestData.method,
-        Object.fromEntries(processedHeaders.filter((h) => h.key && h.enabled).map((h) => [h.key, h.value])),
-        processedBody,
-      )
-
-      if (mockResponse) {
-        setResponse(mockResponse)
-
-        // Add to history
-        const historyItem: RequestHistory = {
-          id: Date.now().toString(),
-          timestamp: new Date().toISOString(),
-          request: requestData,
-          response: mockResponse,
-        }
-        storage.addToHistory(historyItem)
-        setHistory(storage.getHistory())
-
-        setIsLoading(false)
-        return
-      }
 
       // In a real app, we would use a more sophisticated approach to handle
       // different request methods, CORS issues, etc.
@@ -326,7 +272,6 @@ export default function Home() {
               }}
             />
             <CodeGenerator requestData={currentRequest} authConfig={authConfig} />
-            <MockServer mocks={mocks} setMocks={setMocks} activeMock={activeMock} setActiveMock={setActiveMock} />
             <TestInterface response={response} tests={tests} setTests={setTests} />
           </div>
         </div>
@@ -343,5 +288,4 @@ export default function Home() {
       </main>
     </div>
   )
-}
-
+        }
